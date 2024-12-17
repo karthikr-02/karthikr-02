@@ -1,0 +1,108 @@
+import sys
+import os
+import shutil
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLineEdit, QPushButton, QLabel, QFileDialog, QHBoxLayout
+
+
+class FileCopyApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("File Copy Application")
+        self.setGeometry(400, 100, 400, 200)
+
+        # Create layout
+        self.layout = QHBoxLayout()
+
+        # Label for Source Directory
+        self.source_label = QLabel("Source Directory:")
+        self.layout.addWidget(self.source_label)
+
+        # Input for Source Directory
+        self.source_input = QLineEdit(self)
+        self.layout.addWidget(self.source_input)
+
+        # Button to browse source directory
+        self.browse_source_btn = QPushButton("Browse Source", self)
+        self.browse_source_btn.clicked.connect(self.browse_source)
+        self.layout.addWidget(self.browse_source_btn)
+
+        # Label for Destination Directory
+        self.dest_label = QLabel("Destination Directory:")
+        self.layout.addWidget(self.dest_label)
+
+        # Input for Destination Directory
+        self.dest_input = QLineEdit(self)
+        self.layout.addWidget(self.dest_input)
+
+        # Button to browse destination directory
+        self.browse_dest_btn = QPushButton("Browse Destination", self)
+        self.browse_dest_btn.clicked.connect(self.browse_destination)
+        self.layout.addWidget(self.browse_dest_btn)
+
+        # Button to copy files
+        self.copy_btn = QPushButton("Copy Files", self)
+        self.copy_btn.clicked.connect(self.copy_files)
+        self.layout.addWidget(self.copy_btn)
+
+        # Label for status
+        self.status_label = QLabel("")
+        self.layout.addWidget(self.status_label)
+
+        # Set layout
+        self.setLayout(self.layout)
+
+    def browse_source(self):
+        """Open file dialog to choose source directory"""
+        source_dir = QFileDialog.getExistingDirectory(self, "Select Source Directory")
+        if source_dir:
+            self.source_input.setText(source_dir)
+
+    def browse_destination(self):
+        """Open file dialog to choose destination directory"""
+        dest_dir = QFileDialog.getExistingDirectory(self, "Select Destination Directory")
+        if dest_dir:
+            self.dest_input.setText(dest_dir)
+
+    def copy_files(self):
+        """Copy all files from source to destination"""
+        source_dir = self.source_input.text()
+        dest_dir = self.dest_input.text()
+
+        # Check if directories are valid
+        if not os.path.exists(source_dir):
+            self.status_label.setText("Source directory does not exist!")
+            return
+
+        if not os.path.exists(dest_dir):
+            self.status_label.setText("Destination directory does not exist!")
+            return
+
+        if not os.path.isdir(source_dir) or not os.path.isdir(dest_dir):
+            self.status_label.setText("Source or Destination is not a valid directory!")
+            return
+
+        # Copy all files from source to destination
+        try:
+            # List all files in source directory
+            files = os.listdir(source_dir)
+            for file in files:
+                source_file = os.path.join(source_dir, file)
+                dest_file = os.path.join(dest_dir, file)
+
+                # Only copy if it's a file, not a directory
+                if os.path.isfile(source_file):
+                    shutil.copy(source_file, dest_file)
+
+            self.status_label.setText(f"Copied {len(files)} files successfully.")
+        except Exception as e:
+            self.status_label.setText(f"Error: {e}")
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+
+    # Create and show the application window
+    window = FileCopyApp()
+    window.show()
+
+    sys.exit(app.exec_())
