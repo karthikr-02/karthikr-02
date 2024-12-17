@@ -1,0 +1,50 @@
+import os
+import argparse
+from PIL import Image
+
+# Function to get image metadata
+def get_image_metadata(image_path):
+    try:
+        with Image.open(image_path) as img:
+            # Extract basic metadata for images
+            info = {
+                'format': img.format,
+                'mode': img.mode,
+                'size': img.size,  # (width, height)
+                'width': img.width,
+                'height': img.height,
+                'is_animated': getattr(img, "is_animated", False),
+                'frames': getattr(img, "n_frames", 1)
+            }
+            return info
+    except Exception as e:
+        print(f"Error reading image metadata: {e}")
+        return None
+
+# Main function to parse arguments and fetch metadata
+def main():
+    parser = argparse.ArgumentParser(description="Get metadata from image files.")
+    parser.add_argument('--filepath', type=str, help="Path to the image file")
+
+    # Parse the arguments
+    args = parser.parse_args()
+    filepath = args.filepath
+
+    # Check if the file exists
+    if not os.path.isfile(filepath):
+        print(f"The file '{filepath}' does not exist!")
+        return
+
+    # Handle image files (e.g., jpg, png)
+    if filepath.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.bmp')):
+        metadata = get_image_metadata(filepath)
+        if metadata:
+            print("Image Metadata:")
+            for key, value in metadata.items():
+                print(f"{key}: {value}")
+
+    else:
+        print("Unsupported file type. This application only supports image files.")
+
+if __name__ == "__main__":
+    main()
